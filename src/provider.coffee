@@ -32,7 +32,8 @@ angular.module 'builder.provider', []
     #   form mode: `fb-form` this is the form for end-user to input value.
     @forms =
         default: []
-
+        
+    @watchItems = ['label', 'description', 'placeholder', 'required', 'options', 'validation'];
 
     # ----------------------------------------
     # private functions
@@ -49,7 +50,7 @@ angular.module 'builder.provider', []
             validation: component.validation ? '/.*/'
             validationOptions: component.validationOptions ? []
             options: component.options ? []
-            arrayToText: component.arrayToText ? no
+            arrayToText: component.arrayToText ? no 
             template: component.template
             templateUrl: component.templateUrl
             popoverTemplate: component.popoverTemplate
@@ -63,17 +64,21 @@ angular.module 'builder.provider', []
     @convertFormObject = (name, formObject={}) ->
         component = @components[formObject.component]
         throw "The component #{formObject.component} was not registered." if not component?
-        result =
-            id: formObject.id
-            component: formObject.component
-            editable: formObject.editable ? component.editable
-            index: formObject.index ? 0
-            label: formObject.label ? component.label
-            description: formObject.description ? component.description
-            placeholder: formObject.placeholder ? component.placeholder
-            options: formObject.options ? component.options
-            required: formObject.required ? component.required
-            validation: formObject.validation ? component.validation
+        result = 
+            component: formObject.component;
+        
+        #Assign watched fields
+        ((result[watchedField] = formObject[watchedField]) for watchedField in @watchItems)
+        
+        #Replace nulls with defaults
+        result.editable = result.editable ? component.editable
+        result.index = result.index ? 0
+        result.label = result.label ? component.label
+        result.description = result.description ? component.description
+        result.placeholder = result.placeholder ? component.placeholder
+        result.options = result.options ? component.options
+        result.required = result.required ? component.required
+        result.validation = result.validation ? component.validation
         result
 
     @reindexFormObject = (name) =>
@@ -210,5 +215,6 @@ angular.module 'builder.provider', []
         insertFormObject: @insertFormObject
         removeFormObject: @removeFormObject
         updateFormObjectIndex: @updateFormObjectIndex
+        watchItems: @watchItems
     ]
     return

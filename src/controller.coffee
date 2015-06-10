@@ -34,13 +34,8 @@ angular.module 'builder.controller', ['builder.provider']
 
         $scope.optionsText = formObject.options.join '\n'
 
-        $scope.$watch '[label, description, placeholder, required, options, validation]', ->
-            formObject.label = $scope.label
-            formObject.description = $scope.description
-            formObject.placeholder = $scope.placeholder
-            formObject.required = $scope.required
-            formObject.options = $scope.options
-            formObject.validation = $scope.validation
+        $scope.$watch '[' + $builder.watchItems.toString() + ']', ->
+            ((formObject[watchedField] = $scope[watchedField]) for watchedField in $builder.watchItems)
         , yes
 
         $scope.$watch 'optionsText', (text) ->
@@ -56,24 +51,14 @@ angular.module 'builder.controller', ['builder.provider']
             ###
             Backup input value.
             ###
-            @model =
-                label: $scope.label
-                description: $scope.description
-                placeholder: $scope.placeholder
-                required: $scope.required
-                optionsText: $scope.optionsText
-                validation: $scope.validation
+            @model = {}
+            ((@model[watchedField] = $scope[watchedField]) for watchedField in $builder.watchItems)
         rollback: ->
             ###
             Rollback input value.
             ###
             return if not @model
-            $scope.label = @model.label
-            $scope.description = @model.description
-            $scope.placeholder = @model.placeholder
-            $scope.required = @model.required
-            $scope.optionsText = @model.optionsText
-            $scope.validation = @model.validation
+            (($scope[watchedField] = @model[watchedField]) for watchedField in $builder.watchItems)
 ]
 
 
