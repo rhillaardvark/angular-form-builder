@@ -65,7 +65,8 @@ angular.module 'builder.provider', []
         component = @components[formObject.component]
         throw "The component #{formObject.component} was not registered." if not component?
         result = 
-            component: formObject.component;
+            id: formObject.id
+            component: formObject.component
         
         #Assign watched fields
         ((result[watchedField] = formObject[watchedField]) for watchedField in @watchItems)
