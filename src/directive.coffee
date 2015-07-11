@@ -32,7 +32,7 @@ angular.module 'builder.directive', [
         # ----------------------------------------
         # valuables
         # ----------------------------------------
-        scope.formName = attrs.fbBuilder
+        scope.formName = scope.fbBuilder
         $builder.forms[scope.formName] ?= []
         scope.formObjects = $builder.forms[scope.formName]
         beginMove = yes
@@ -310,7 +310,7 @@ angular.module 'builder.directive', [
     require: 'ngModel'  # form data (end-user input value)
     scope:
         # input model for scops in ng-repeat
-        formName: '@fbForm'
+        formName: '=fbForm'
         input: '=ngModel'
         default: '=fbDefault'
     template:
