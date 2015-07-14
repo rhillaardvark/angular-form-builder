@@ -389,4 +389,13 @@ angular.module 'builder.directive', [
                 scope.inputArray = value
             else
                 scope.inputText = value
+
+        # update the displayed value whenever the input target changes
+        scope.$watch "input['#{scope.$index}']", (value) ->
+            return if ((value?.value == scope.inputText) && not scope.$component.arrayToText) || ((value?.value == scope.inputArray) && scope.$component.arrayToText) || ((value?.value=="") && (scope.inputText==undefined))
+
+            if scope.$component.arrayToText
+                scope.inputText = value?.value
+            else
+                scope.inputText = value?.value
 ]
