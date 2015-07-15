@@ -389,6 +389,7 @@ angular.module 'builder.directive', [
                 scope.inputArray = value
             else
                 scope.inputText = value
+            scope.input[scope.$index].value = value;
 
         # update the displayed value whenever the input target changes
         scope.$watch "input['#{scope.$index}']", (value) ->
