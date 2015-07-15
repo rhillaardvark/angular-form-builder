@@ -382,21 +382,29 @@ angular.module 'builder.directive', [
         if not scope.$component.arrayToText and scope.formObject.options.length > 0
             scope.inputText = scope.formObject.options[0]
 
-        # set default value
-        scope.$watch "default['#{scope.formObject.id}']", (value) ->
-            return if not value
-            if scope.$component.arrayToText
-                scope.inputArray = value
-            else
-                scope.inputText = value
-            scope.input[scope.$index].value = value;
-
         # update the displayed value whenever the input target changes
         scope.$watch "input['#{scope.$index}']", (value) ->
+            if scope.default?[scope.formObject.id]?
+                # the default hasn't been consumed, which means this is the first time this input has been set
+                if scope.$component.arrayToText
+                    scope.inputArray = scope.default[scope.formObject.id] or scope.inputArray
+                else
+                    scope.inputText = scope.default[scope.formObject.id] or scope.inputText
+                scope.default[scope.formObject.id] = undefined
+                return
+            else if not value
+                # there was no default and there is no current value, so it's blank
+                if scope.$component.arrayToText
+                    scope.inputArray = null
+                else
+                    scope.inputText = null
+                return
+            
+            # avoid unnecessary triggering of the change functions
             return if ((value?.value == scope.inputText) && not scope.$component.arrayToText) || ((value?.value == scope.inputArray) && scope.$component.arrayToText) || ((value?.value=="") && (scope.inputText==undefined))
 
             if scope.$component.arrayToText
-                scope.inputText = value?.value
+                scope.inputArray = value?.value
             else
                 scope.inputText = value?.value
 ]
