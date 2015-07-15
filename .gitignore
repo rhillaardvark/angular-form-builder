@@ -13,3 +13,11 @@ bower_components
 
 # compass
 .sass-cache
+
+# visual studio
+.vs/
+obj/
+Gruntfile.js
+Gruntfile.min.js
+
+#

@@ -1,0 +1,12 @@
+﻿[
+  {
+    "outputFile": "Gruntfile.js",
+    "inputFile": "Gruntfile.coffee",
+    "minify": {
+      "enabled": true
+    },
+    "includeInProject": true,
+    "sourceMap": false,
+    "options": {}
+  }
+]
