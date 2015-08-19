@@ -403,8 +403,6 @@ angular.module 'builder.directive', [
             # avoid unnecessary triggering of the change functions
             return if ((value?.value == scope.inputText) && not scope.$component.arrayToText) || ((value?.value == scope.inputArray) && scope.$component.arrayToText) || ((value?.value=="") && (scope.inputText==undefined))
 
-            if scope.$component.arrayToText
-                scope.inputArray = value?.value
-            else
+            if !scope.$component.arrayToText
                 scope.inputText = value?.value
 ]
