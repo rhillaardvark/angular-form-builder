@@ -31,13 +31,15 @@
         var component;
         copyObjectToScope(formObject, $scope);
         $scope.optionsText = formObject.options.join('\n');
-        $scope.$watch('[label, description, placeholder, required, options, validation]', function() {
-          formObject.label = $scope.label;
-          formObject.description = $scope.description;
-          formObject.placeholder = $scope.placeholder;
-          formObject.required = $scope.required;
-          formObject.options = $scope.options;
-          return formObject.validation = $scope.validation;
+        $scope.$watch('[' + $builder.watchItems.toString() + ']', function() {
+          var watchedField, _i, _len, _ref, _results;
+          _ref = $builder.watchItems;
+          _results = [];
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            watchedField = _ref[_i];
+            _results.push(formObject[watchedField] = $scope[watchedField]);
+          }
+          return _results;
         }, true);
         $scope.$watch('optionsText', function(text) {
           var x;
@@ -65,29 +67,32 @@
           /*
           Backup input value.
            */
-          return this.model = {
-            label: $scope.label,
-            description: $scope.description,
-            placeholder: $scope.placeholder,
-            required: $scope.required,
-            optionsText: $scope.optionsText,
-            validation: $scope.validation
-          };
+          var watchedField, _i, _len, _ref, _results;
+          this.model = {};
+          _ref = $builder.watchItems;
+          _results = [];
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            watchedField = _ref[_i];
+            _results.push(this.model[watchedField] = $scope[watchedField]);
+          }
+          return _results;
         },
         rollback: function() {
 
           /*
           Rollback input value.
            */
+          var watchedField, _i, _len, _ref, _results;
           if (!this.model) {
             return;
           }
-          $scope.label = this.model.label;
-          $scope.description = this.model.description;
-          $scope.placeholder = this.model.placeholder;
-          $scope.required = this.model.required;
-          $scope.optionsText = this.model.optionsText;
-          return $scope.validation = this.model.validation;
+          _ref = $builder.watchItems;
+          _results = [];
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            watchedField = _ref[_i];
+            _results.push($scope[watchedField] = this.model[watchedField]);
+          }
+          return _results;
         }
       };
     }
@@ -182,7 +187,7 @@
         template: "<div class='form-horizontal'>\n    <div class='fb-form-object-editable' ng-repeat=\"object in formObjects\"\n        fb-form-object-editable=\"object\"></div>\n</div>",
         link: function(scope, element, attrs) {
           var beginMove, _base, _name;
-          scope.formName = attrs.fbBuilder;
+          scope.formName = scope.fbBuilder;
           if ((_base = $builder.forms)[_name = scope.formName] == null) {
             _base[_name] = [];
           }
@@ -459,7 +464,7 @@
         restrict: 'A',
         require: 'ngModel',
         scope: {
-          formName: '@fbForm',
+          formName: '=fbForm',
           input: '=ngModel',
           "default": '=fbDefault'
         },
@@ -528,14 +533,29 @@
           if (!scope.$component.arrayToText && scope.formObject.options.length > 0) {
             scope.inputText = scope.formObject.options[0];
           }
-          return scope.$watch("default['" + scope.formObject.id + "']", function(value) {
-            if (!value) {
+          return scope.$watch("input['" + scope.$index + "']", function(value) {
+            var _ref;
+            if (((_ref = scope["default"]) != null ? _ref[scope.formObject.id] : void 0) != null) {
+              if (scope.$component.arrayToText) {
+                scope.inputArray = scope["default"][scope.formObject.id] || scope.inputArray;
+              } else {
+                scope.inputText = scope["default"][scope.formObject.id] || scope.inputText;
+              }
+              scope["default"][scope.formObject.id] = void 0;
+              return;
+            } else if (!value) {
+              if (scope.$component.arrayToText) {
+                scope.inputArray = null;
+              } else {
+                scope.inputText = null;
+              }
               return;
             }
-            if (scope.$component.arrayToText) {
-              return scope.inputArray = value;
-            } else {
-              return scope.inputText = value;
+            if ((((value != null ? value.value : void 0) === scope.inputText) && !scope.$component.arrayToText) || (((value != null ? value.value : void 0) === scope.inputArray) && scope.$component.arrayToText) || (((value != null ? value.value : void 0) === "") && (scope.inputText === void 0))) {
+              return;
+            }
+            if (!scope.$component.arrayToText) {
+              return scope.inputText = value != null ? value.value : void 0;
             }
           });
         }
@@ -992,6 +1012,7 @@
     this.forms = {
       "default": []
     };
+    this.watchItems = ['label', 'description', 'placeholder', 'required', 'options', 'validation'];
     this.convertComponent = function(name, component) {
       var result, _ref, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8, _ref9;
       result = {
@@ -1020,7 +1041,7 @@
       return result;
     };
     this.convertFormObject = function(name, formObject) {
-      var component, result, _ref, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7;
+      var component, result, watchedField, _i, _len, _ref, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8;
       if (formObject == null) {
         formObject = {};
       }
@@ -1030,16 +1051,21 @@
       }
       result = {
         id: formObject.id,
-        component: formObject.component,
-        editable: (_ref = formObject.editable) != null ? _ref : component.editable,
-        index: (_ref1 = formObject.index) != null ? _ref1 : 0,
-        label: (_ref2 = formObject.label) != null ? _ref2 : component.label,
-        description: (_ref3 = formObject.description) != null ? _ref3 : component.description,
-        placeholder: (_ref4 = formObject.placeholder) != null ? _ref4 : component.placeholder,
-        options: (_ref5 = formObject.options) != null ? _ref5 : component.options,
-        required: (_ref6 = formObject.required) != null ? _ref6 : component.required,
-        validation: (_ref7 = formObject.validation) != null ? _ref7 : component.validation
+        component: formObject.component
       };
+      _ref = this.watchItems;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        watchedField = _ref[_i];
+        result[watchedField] = formObject[watchedField];
+      }
+      result.editable = (_ref1 = result.editable) != null ? _ref1 : component.editable;
+      result.index = (_ref2 = result.index) != null ? _ref2 : 0;
+      result.label = (_ref3 = result.label) != null ? _ref3 : component.label;
+      result.description = (_ref4 = result.description) != null ? _ref4 : component.description;
+      result.placeholder = (_ref5 = result.placeholder) != null ? _ref5 : component.placeholder;
+      result.options = (_ref6 = result.options) != null ? _ref6 : component.options;
+      result.required = (_ref7 = result.required) != null ? _ref7 : component.required;
+      result.validation = (_ref8 = result.validation) != null ? _ref8 : component.validation;
       return result;
     };
     this.reindexFormObject = (function(_this) {
@@ -1225,7 +1251,8 @@
             addFormObject: _this.addFormObject,
             insertFormObject: _this.insertFormObject,
             removeFormObject: _this.removeFormObject,
-            updateFormObjectIndex: _this.updateFormObjectIndex
+            updateFormObjectIndex: _this.updateFormObjectIndex,
+            watchItems: _this.watchItems
           };
         };
       })(this)
